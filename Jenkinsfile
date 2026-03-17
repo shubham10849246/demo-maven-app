@@ -4,7 +4,7 @@ pipeline {
     environment {
         // You can use this if you want to reference the token globally
         SONAR_TOKEN = credentials('sonar-token')
-    }
+    }p
 
     stages {
         stage('Checkout') {
@@ -16,7 +16,31 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                sh 'mvn clean verify'
+                sh 'mvn clean package'
+            }
+        }
+
+                stage('Docker Build') {
+            steps {
+                sh 'docker build -t demo-app .'
+            }
+        }
+
+        stage('Push to Nexus') {
+            steps {
+                sh '''
+                docker tag demo-app 13.233.166.208:8083/demo-app
+                docker push 13.233.166.208:8083/demo-app
+                '''
+            }
+        }
+
+        stage('Push to JFrog') {
+            steps {
+                sh '''
+                docker tag demo-app 13.233.166.208:8082/demo-app
+                docker push 13.233.166.208:8082/demo-app
+                '''
             }
         }
 

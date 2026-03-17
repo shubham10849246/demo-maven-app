@@ -1,21 +1,31 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven'
+    environment {
+        SONAR_TOKEN = credentials('sonar-token') // optional if using credentials
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                url: 'https://github.com/shubham10849246/demo-maven-app.git'
+                git 'https://github.com/<your-username>/devops-demo-app.git'
             }
         }
 
-        stage('Build') {
+        stage('Build & Test') {
             steps {
-                sh 'mvn clean install'
+                sh 'mvn clean verify'
+            }
+        }
+
+        stage('Sonar Scan') {
+            steps {
+                sh '''
+                mvn sonar:sonar \
+                -Dsonar.projectKey=demo-app \
+                -Dsonar.host.url=http://13.233.166.208:9000 \
+                -Dsonar.login=squ_a28a9962230428489c0fd51d4d2bdee3f4d143a5
+                '''
             }
         }
     }
